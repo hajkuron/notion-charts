@@ -3,35 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
+    <meta name="color-scheme" content="dark">
     <title>Habit tracker</title>
     <link rel="stylesheet" href="styles.css">
-    <script>
-        // ?theme=dark or ?theme=light pins the theme (handy for Notion embeds).
-        (function () {
-            var theme = new URLSearchParams(location.search).get('theme');
-            if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme;
-        })();
-    </script>
 </head>
 <body>
-    <main class="page">
-        <header class="page-header">
-            <h1>Habit tracker</h1>
-            <p class="updated" id="updated"></p>
-        </header>
+    <div id="charts" class="calendar-row" aria-live="polite">
+        <p class="status" id="status">Loading…</p>
+    </div>
 
-        <div id="charts" class="charts" aria-live="polite">
-            <p class="status" id="status">Loading…</p>
-        </div>
-
-        <details class="table-view" id="table-view" hidden>
+    <footer class="page-footer">
+        <details id="table-view" hidden>
             <summary>View as table</summary>
             <div class="table-scroll">
                 <table id="table"></table>
             </div>
         </details>
-    </main>
+        <p class="updated" id="updated"></p>
+    </footer>
 
     <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 

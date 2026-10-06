@@ -17,7 +17,7 @@ node scripts/fetch-notion.mjs
 python3 -m http.server 8080 --directory site
 ```
 
-Open http://localhost:8080. Add `?theme=dark` or `?theme=light` to pin the theme.
+Open http://localhost:8080.
 
 ## Configuration
 

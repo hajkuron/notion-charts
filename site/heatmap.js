@@ -1,16 +1,22 @@
-// GitHub-style contribution heatmaps for the habit data in data/habits.json.
+// GitHub-style contribution calendars for the habit data in data/habits.json.
 
+const GREEN = ['#0e4429', '#006d32', '#26a641', '#39d353'];
+const BLUE = ['#0a3069', '#0d4a6e', '#0969da', '#54aeff'];
+const ORANGE = ['#3d1e00', '#7a2e00', '#bd4b00', '#fb8f44'];
+
+// `colors` runs from the lowest filled level to the highest (all habits of the chart done).
 const CHARTS = [
-    { title: 'Workout & nutrition', keys: ['workout', 'nutrition'], hue: 'green' },
-    { title: 'Work business', keys: ['workBusiness'], hue: 'blue' },
-    { title: 'Miracle morning', keys: ['miracleMorning'], hue: 'orange' },
+    { title: 'Workout & Nutrition', keys: ['workout', 'nutrition'], colors: [GREEN[1], GREEN[3]] },
+    { title: 'Work Business', keys: ['workBusiness'], colors: [BLUE[3]] },
+    { title: 'Miracle Morning', keys: ['miracleMorning'], colors: [ORANGE[3]] },
 ];
 
-const WEEKS = 53;
 const CELL = 11;
-const STEP = 14;
-const LEFT = 28;
-const TOP = 16;
+const STEP = 15; // cell + 4px gutter
+const MONTH_GAP = 10;
+const LABEL_WIDTH = 24;
+const TOP = 22;
+const MONTHS_AHEAD = 11; // how far "Next" may page past the current month
 const DAY_MS = 86400000;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -18,7 +24,8 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 // Days are handled as UTC midnights so daylight-saving shifts can never move a cell.
 const toMs = (iso) => Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10));
 const toIso = (ms) => new Date(ms).toISOString().slice(0, 10);
-const mondayOf = (ms) => ms - ((new Date(ms).getUTCDay() + 6) % 7) * DAY_MS;
+// Months are counted from year 0 so paging is plain integer arithmetic.
+const monthIndex = (ms) => new Date(ms).getUTCFullYear() * 12 + new Date(ms).getUTCMonth();
 
 function todayIso() {
     const now = new Date();
@@ -41,34 +48,43 @@ function svgEl(tag, attributes = {}, text) {
 }
 
 function formatDate(iso) {
-    return new Date(toMs(iso)).toLocaleDateString('en-GB', {
-        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+    return new Date(toMs(iso)).toLocaleDateString('en-US', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
     });
 }
 
-// The year shown starts at the first tracked week and fills left to right.
-// Once there is more than a year of history it becomes the latest 53 weeks.
-function chartWindow(firstMs, todayMs) {
-    let start = mondayOf(firstMs);
-    if (todayMs > start + WEEKS * 7 * DAY_MS - DAY_MS) {
-        start = mondayOf(todayMs) - (WEEKS - 1) * 7 * DAY_MS;
+// Each month is its own block of week columns, Monday on top.
+function monthLayout(index) {
+    const year = Math.floor(index / 12);
+    const month = index % 12;
+    const firstMs = Date.UTC(year, month, 1);
+    const days = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    const lead = (new Date(firstMs).getUTCDay() + 6) % 7;
+    return { year, month, firstMs, days, lead, columns: Math.ceil((lead + days) / 7) };
+}
+
+const monthWidth = (layout) => layout.columns * STEP - (STEP - CELL);
+
+function countMonthsThatFit(startIndex, available) {
+    let used = LABEL_WIDTH;
+    let count = 0;
+    while (count < 24) {
+        const width = monthWidth(monthLayout(startIndex + count)) + (count ? MONTH_GAP : 0);
+        if (used + width > available) break;
+        used += width;
+        count += 1;
     }
-    return start;
+    return Math.max(1, count);
 }
 
-function levelClass(done, total) {
-    if (done === 0) return 'level-none';
-    return done === total ? 'level-full' : 'level-half';
-}
-
-function computeStats(chart, byDate, firstMs, todayMs) {
+function computeStats(chart, context) {
     let tracked = 0;
     let completed = 0;
     let best = 0;
     let run = 0;
     let current = 0;
-    for (let ms = firstMs; ms <= todayMs; ms += DAY_MS) {
-        const day = byDate.get(toIso(ms));
+    for (let ms = context.firstMs; ms <= context.todayMs; ms += DAY_MS) {
+        const day = context.byDate.get(toIso(ms));
         const complete = !!day && chart.keys.every((key) => day[key]);
         tracked += 1;
         if (complete) {
@@ -78,128 +94,135 @@ function computeStats(chart, byDate, firstMs, todayMs) {
             current = run;
         } else {
             // An unfinished today does not break a streak that ran through yesterday.
-            if (ms !== todayMs) current = 0;
+            if (ms !== context.todayMs) current = 0;
             run = 0;
         }
     }
     return { tracked, completed, best, current };
 }
 
-function renderStats(stats) {
-    const days = (n) => `${n} ${n === 1 ? 'day' : 'days'}`;
-    const list = el('dl', { class: 'stats' });
-    const items = [
-        ['Current streak', days(stats.current)],
-        ['Best streak', days(stats.best)],
-        ['Completed', `${stats.completed} / ${stats.tracked}`],
-    ];
-    for (const [label, value] of items) {
-        const item = el('div', { class: 'stat' });
-        item.append(el('dt', {}, label), el('dd', {}, value));
-        list.append(item);
+function renderCalendar(chart, context, startIndex, monthCount) {
+    const layouts = [];
+    let width = LABEL_WIDTH;
+    for (let i = 0; i < monthCount; i += 1) {
+        const layout = monthLayout(startIndex + i);
+        layout.x = width + (i ? MONTH_GAP : 0);
+        width = layout.x + monthWidth(layout);
+        layouts.push(layout);
     }
-    return list;
-}
-
-function renderLegend(chart) {
-    const levels = chart.keys.length > 1
-        ? [['level-none', 'None'], ['level-half', '1 of 2'], ['level-full', 'Both']]
-        : [['level-none', 'Missed'], ['level-full', 'Done']];
-    const list = el('ul', { class: 'legend' });
-    for (const [className, label] of levels) {
-        const item = el('li');
-        item.append(el('span', { class: `swatch ${className}` }), document.createTextNode(label));
-        list.append(item);
-    }
-    return list;
-}
-
-function renderHeatmap(chart, context) {
-    const { byDate, firstMs, todayMs, startMs } = context;
-    const width = LEFT + WEEKS * STEP;
-    const height = TOP + 7 * STEP;
+    const height = TOP + 7 * STEP - (STEP - CELL);
     const svg = svgEl('svg', {
-        class: 'heatmap',
-        viewBox: `0 0 ${width} ${height}`,
+        class: 'calendar',
+        width: width + 1,
+        height: height + 1,
+        viewBox: `0 0 ${width + 1} ${height + 1}`,
         role: 'img',
         'aria-label': `${chart.title}: one square per day. Details are in the table below.`,
     });
 
-    ['Mon', 'Wed', 'Fri'].forEach((label, index) => {
+    ['M', 'W', 'F'].forEach((label, index) => {
         svg.append(svgEl('text', { x: 0, y: TOP + index * 2 * STEP + CELL - 2 }, label));
     });
 
-    // A month is labelled on the first column that contains its 1st.
-    const monthOfColumn = (week) => new Date(startMs + week * 7 * DAY_MS + 6 * DAY_MS);
-    let lastLabelWeek = -4;
-    for (let week = 0; week < WEEKS; week += 1) {
-        const date = monthOfColumn(week);
-        const startsMonth = week === 0 || date.getUTCMonth() !== monthOfColumn(week - 1).getUTCMonth();
-        if (!startsMonth || week - lastLabelWeek < 3 || week > WEEKS - 2) continue;
-        // The first column may be the tail of the previous month; label it only if it has room.
-        if (week === 0 && monthOfColumn(2).getUTCMonth() !== date.getUTCMonth()) continue;
-        const month = date.getUTCMonth();
-        const label = month === 0 ? `Jan ${date.getUTCFullYear()}` : MONTHS[month];
-        svg.append(svgEl('text', { x: LEFT + week * STEP, y: 9 }, label));
-        lastLabelWeek = week;
-    }
+    for (const layout of layouts) {
+        const label = layout.month === 0 ? `Jan ${layout.year}` : MONTHS[layout.month];
+        svg.append(svgEl('text', { x: layout.x, y: 11 }, label));
 
-    for (let week = 0; week < WEEKS; week += 1) {
-        for (let weekday = 0; weekday < 7; weekday += 1) {
-            const ms = startMs + (week * 7 + weekday) * DAY_MS;
+        for (let d = 0; d < layout.days; d += 1) {
+            const ms = layout.firstMs + d * DAY_MS;
             const iso = toIso(ms);
-            const tracked = ms >= firstMs && ms <= todayMs;
-            const day = byDate.get(iso);
+            const slot = layout.lead + d;
+            const tracked = ms >= context.firstMs && ms <= context.todayMs;
+            const day = context.byDate.get(iso);
             const done = day ? chart.keys.filter((key) => day[key]).length : 0;
-            const classes = ['cell', tracked ? levelClass(done, chart.keys.length) : 'untracked'];
-            if (ms === todayMs) classes.push('today');
-            svg.append(svgEl('rect', {
-                class: classes.join(' '),
-                x: LEFT + week * STEP + 1,
-                y: TOP + weekday * STEP + 1,
+            const rect = svgEl('rect', {
+                class: `cell${tracked ? '' : ' untracked'}${ms === context.todayMs ? ' today' : ''}`,
+                x: layout.x + Math.floor(slot / 7) * STEP + 0.5,
+                y: TOP + (slot % 7) * STEP + 0.5,
                 width: CELL,
                 height: CELL,
-                rx: 2.5,
+                rx: 2,
                 'data-date': iso,
-            }));
+            });
+            if (tracked && done > 0) rect.style.fill = chart.colors[done - 1];
+            svg.append(rect);
         }
     }
     return svg;
 }
 
+function renderLegend(chart) {
+    const legend = el('div', { class: 'legend-container' });
+    legend.append(el('span', {}, 'Less'));
+    const swatches = el('span', { class: 'legend-swatches' });
+    swatches.append(el('span', { class: 'swatch' }));
+    for (const color of chart.colors) {
+        const swatch = el('span', { class: 'swatch' });
+        swatch.style.background = color;
+        swatches.append(swatch);
+    }
+    legend.append(swatches, el('span', {}, 'More'));
+    return legend;
+}
+
 function renderChart(chart, context) {
-    const card = el('section', { class: `card hue-${chart.hue}` });
+    const card = el('section', { class: 'calendar-container' });
+    const stats = computeStats(chart, context);
 
-    const header = el('div', { class: 'card-header' });
+    const header = el('div', { class: 'calendar-header' });
     header.append(el('h2', {}, chart.title));
-    header.append(renderStats(computeStats(chart, context.byDate, context.firstMs, context.todayMs)));
+    header.append(el('p', { class: 'stats' },
+        `Streak ${stats.current} · Best ${stats.best} · Done ${stats.completed}/${stats.tracked}`));
 
-    const scroll = el('div', { class: 'heatmap-scroll' });
-    const svg = renderHeatmap(chart, context);
-    scroll.append(svg);
+    const body = el('div', { class: 'calendar-body' });
 
-    const footer = el('div', { class: 'card-footer' });
-    footer.append(renderLegend(chart));
+    const previous = el('button', { class: 'button', type: 'button' }, '← Previous');
+    const next = el('button', { class: 'button', type: 'button' }, 'Next →');
+    const buttons = el('div', { class: 'button-container' });
+    buttons.append(previous, next);
+    const footer = el('div', { class: 'button-legend-container' });
+    footer.append(buttons, renderLegend(chart));
 
-    card.append(header, scroll, footer);
-    attachTooltip(svg, chart, context);
-    return { card, scroll };
+    card.append(header, body, footer);
+
+    const firstIndex = monthIndex(context.firstMs);
+    const todayIndex = monthIndex(context.todayMs);
+    let start = null;
+    let visible = 0;
+
+    const draw = () => {
+        const available = body.clientWidth;
+        if (!available) return;
+        // First draw: begin at the first tracked month, or later if needed to keep today in view.
+        if (start === null) {
+            start = firstIndex;
+            while (start + countMonthsThatFit(start, available) - 1 < todayIndex) start += 1;
+        }
+        visible = countMonthsThatFit(start, available);
+        hideTooltip();
+        body.replaceChildren(renderCalendar(chart, context, start, visible));
+        previous.disabled = start <= firstIndex;
+        next.disabled = start + visible - 1 >= todayIndex + MONTHS_AHEAD;
+    };
+
+    previous.addEventListener('click', () => { start -= 1; draw(); });
+    next.addEventListener('click', () => { start += 1; draw(); });
+    new ResizeObserver(draw).observe(body);
+    attachTooltip(body, chart, context);
+    return card;
 }
 
 const tooltip = document.getElementById('tooltip');
 let activeCell = null;
 
 function hideTooltip() {
-    if (activeCell) activeCell.classList.remove('active');
     activeCell = null;
     tooltip.hidden = true;
 }
 
 function showTooltip(cell, chart, context) {
     if (cell === activeCell) return;
-    hideTooltip();
     activeCell = cell;
-    cell.classList.add('active');
 
     const iso = cell.dataset.date;
     const ms = toMs(iso);
@@ -231,26 +254,26 @@ function showTooltip(cell, chart, context) {
     tooltip.style.top = `${above >= 8 ? above : box.bottom + 8}px`;
 }
 
-function attachTooltip(svg, chart, context) {
+function attachTooltip(body, chart, context) {
     const handle = (event) => {
         const cell = event.target.closest('.cell');
         if (cell) showTooltip(cell, chart, context);
         else hideTooltip();
     };
-    svg.addEventListener('pointermove', handle);
-    svg.addEventListener('pointerdown', handle);
-    svg.addEventListener('pointerleave', (event) => {
+    body.addEventListener('pointermove', handle);
+    body.addEventListener('pointerdown', handle);
+    body.addEventListener('pointerleave', (event) => {
         // On touch the tooltip stays until the next tap elsewhere.
         if (event.pointerType === 'mouse') hideTooltip();
     });
 }
 
 document.addEventListener('pointerdown', (event) => {
-    if (!event.target.closest('.heatmap')) hideTooltip();
+    if (!event.target.closest('.calendar')) hideTooltip();
 });
 window.addEventListener('scroll', hideTooltip, true);
 
-function renderTable(data, context) {
+function renderTable(days, context) {
     const keys = [...new Set(CHARTS.flatMap((chart) => chart.keys))];
     const table = document.getElementById('table');
     const head = el('tr');
@@ -260,40 +283,29 @@ function renderTable(data, context) {
     thead.append(head);
 
     const tbody = el('tbody');
-    for (const day of [...data.days].reverse()) {
+    for (const day of [...days].reverse()) {
         const row = el('tr');
         row.append(el('td', {}, formatDate(day.date)));
         for (const key of keys) row.append(el('td', {}, day[key] ? 'Done' : 'Not done'));
         tbody.append(row);
     }
     table.replaceChildren(thead, tbody);
-    document.getElementById('table-view').hidden = data.days.length === 0;
+    document.getElementById('table-view').hidden = days.length === 0;
 }
 
 function render(data) {
     const todayMs = toMs(todayIso());
     const days = data.days.filter((day) => toMs(day.date) <= todayMs);
-    const firstMs = days.length ? toMs(days[0].date) : todayMs;
     const context = {
         byDate: new Map(days.map((day) => [day.date, day])),
         names: Object.fromEntries(data.habits.map((habit) => [habit.key, habit.name])),
-        firstMs,
+        firstMs: days.length ? toMs(days[0].date) : todayMs,
         todayMs,
-        startMs: chartWindow(firstMs, todayMs),
     };
 
     const container = document.getElementById('charts');
-    container.replaceChildren();
-    const todayColumn = Math.floor((todayMs - context.startMs) / (7 * DAY_MS));
-    for (const chart of CHARTS) {
-        const { card, scroll } = renderChart(chart, context);
-        container.append(card);
-        // On narrow screens the chart scrolls sideways; scroll only as far as needed to show today.
-        const scale = scroll.scrollWidth / (LEFT + WEEKS * STEP);
-        scroll.scrollLeft = Math.max(0, (LEFT + (todayColumn + 3) * STEP) * scale - scroll.clientWidth);
-    }
-
-    renderTable({ days }, context);
+    container.replaceChildren(...CHARTS.map((chart) => renderChart(chart, context)));
+    renderTable(days, context);
 
     if (data.updatedAt) {
         const updated = new Date(data.updatedAt).toLocaleString('en-GB', {
