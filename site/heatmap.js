@@ -16,6 +16,11 @@ const STEP = 15; // cell + 4px gutter
 const MONTH_GAP = 10;
 const LABEL_WIDTH = 24;
 const TOP = 22;
+const VISIBLE_MONTHS = 4;
+// Four consecutive months never span more than 22 week columns; sizing for that keeps
+// squares one size whichever months are showing.
+const MAX_COLUMNS = 22;
+const VIEW_WIDTH = LABEL_WIDTH + MAX_COLUMNS * STEP - VISIBLE_MONTHS * (STEP - CELL) + (VISIBLE_MONTHS - 1) * MONTH_GAP;
 const MONTHS_AHEAD = 11; // how far "Next" may page past the current month
 const DAY_MS = 86400000;
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -65,18 +70,6 @@ function monthLayout(index) {
 
 const monthWidth = (layout) => layout.columns * STEP - (STEP - CELL);
 
-function countMonthsThatFit(startIndex, available) {
-    let used = LABEL_WIDTH;
-    let count = 0;
-    while (count < 24) {
-        const width = monthWidth(monthLayout(startIndex + count)) + (count ? MONTH_GAP : 0);
-        if (used + width > available) break;
-        used += width;
-        count += 1;
-    }
-    return Math.max(1, count);
-}
-
 function computeStats(chart, context) {
     let tracked = 0;
     let completed = 0;
@@ -101,10 +94,10 @@ function computeStats(chart, context) {
     return { tracked, completed, best, current };
 }
 
-function renderCalendar(chart, context, startIndex, monthCount) {
+function renderCalendar(chart, context, startIndex) {
     const layouts = [];
     let width = LABEL_WIDTH;
-    for (let i = 0; i < monthCount; i += 1) {
+    for (let i = 0; i < VISIBLE_MONTHS; i += 1) {
         const layout = monthLayout(startIndex + i);
         layout.x = width + (i ? MONTH_GAP : 0);
         width = layout.x + monthWidth(layout);
@@ -113,9 +106,7 @@ function renderCalendar(chart, context, startIndex, monthCount) {
     const height = TOP + 7 * STEP - (STEP - CELL);
     const svg = svgEl('svg', {
         class: 'calendar',
-        width: width + 1,
-        height: height + 1,
-        viewBox: `0 0 ${width + 1} ${height + 1}`,
+        viewBox: `0 0 ${VIEW_WIDTH + 1} ${height + 1}`,
         role: 'img',
         'aria-label': `${chart.title}: one square per day. Details are in the table below.`,
     });
@@ -187,27 +178,19 @@ function renderChart(chart, context) {
 
     const firstIndex = monthIndex(context.firstMs);
     const todayIndex = monthIndex(context.todayMs);
-    let start = null;
-    let visible = 0;
+    // Begin at the first tracked month, or later if needed to keep today in view.
+    let start = Math.max(firstIndex, todayIndex - VISIBLE_MONTHS + 1);
 
     const draw = () => {
-        const available = body.clientWidth;
-        if (!available) return;
-        // First draw: begin at the first tracked month, or later if needed to keep today in view.
-        if (start === null) {
-            start = firstIndex;
-            while (start + countMonthsThatFit(start, available) - 1 < todayIndex) start += 1;
-        }
-        visible = countMonthsThatFit(start, available);
         hideTooltip();
-        body.replaceChildren(renderCalendar(chart, context, start, visible));
+        body.replaceChildren(renderCalendar(chart, context, start));
         previous.disabled = start <= firstIndex;
-        next.disabled = start + visible - 1 >= todayIndex + MONTHS_AHEAD;
+        next.disabled = start + VISIBLE_MONTHS - 1 >= todayIndex + MONTHS_AHEAD;
     };
 
     previous.addEventListener('click', () => { start -= 1; draw(); });
     next.addEventListener('click', () => { start += 1; draw(); });
-    new ResizeObserver(draw).observe(body);
+    draw();
     attachTooltip(body, chart, context);
     return card;
 }

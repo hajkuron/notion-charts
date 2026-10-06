@@ -71,12 +71,12 @@ h2 {
     white-space: nowrap;
 }
 
-.calendar-body {
-    overflow: hidden;
-    min-height: 124px;
+.calendar {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
 }
-
-.calendar { display: block; }
 
 .calendar text {
     fill: var(--text);
