@@ -1,12 +1,19 @@
 // Running score per area since the first tracked day.
 //
 // Each day adds the share of the area's habits that were done (0 to 1), so every
-// area climbs towards the same dashed line: one point per day, a perfect record.
+// area is measured against the same two dashed lines: a perfect record (1 per day)
+// and the goal pace (80% of that).
 
 const AREAS = [
     { name: 'Body', color: '#3b82f6', pointStyle: 'circle', keys: ['workout', 'nutrition'] },
     { name: 'Business', color: '#ef4444', pointStyle: 'rect', keys: ['workFocused', 'workBusiness'] },
     { name: 'Mind', color: '#a78bfa', pointStyle: 'triangle', keys: ['miracleMorning', 'read', 'screenTime'] },
+];
+
+const GOAL = 0.8;
+const REFERENCES = [
+    { label: 'Perfect', color: '#eab308', pace: 1 },
+    { label: `Goal (${GOAL * 100}%)`, color: '#22c55e', pace: GOAL },
 ];
 
 const DAY_MS = 86400000;
@@ -87,19 +94,22 @@ function renderChart(series, dayMs) {
         tension: 0,
         fill: false,
     }));
-    datasets.push({
-        label: 'Perfect',
-        data: labels.map((_, index) => index),
-        borderColor: '#525252',
-        backgroundColor: '#525252',
-        borderWidth: 1.5,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        pointHoverRadius: 0,
-        pointStyle: 'line',
-        tension: 0,
-        fill: false,
-    });
+    for (const reference of REFERENCES) {
+        datasets.push({
+            label: reference.label,
+            data: labels.map((_, index) => index * reference.pace),
+            borderColor: reference.color,
+            backgroundColor: reference.color,
+            borderWidth: 1.5,
+            borderDash: [6, 5],
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            pointStyle: 'line',
+            tension: 0,
+            fill: false,
+            isReference: true,
+        });
+    }
 
     new Chart(document.getElementById('cumulative-chart'), {
         type: 'line',
@@ -126,7 +136,7 @@ function renderChart(series, dayMs) {
                         title: (items) => titles[items[0].dataIndex],
                         label: (item) => {
                             const possible = item.dataIndex;
-                            if (item.dataset.label === 'Perfect') return ` Perfect: ${possible}`;
+                            if (item.dataset.isReference) return ` ${item.dataset.label}: ${formatScore(item.parsed.y)}`;
                             return ` ${item.dataset.label}: ${formatScore(item.parsed.y)} of ${possible} (${percent(item.parsed.y, possible)}%)`;
                         },
                     },
