@@ -1,0 +1,45 @@
+{
+  "updatedAt": "2026-10-06T07:24:21.097Z",
+  "habits": [
+    {
+      "key": "workout",
+      "name": "👟 Workout"
+    },
+    {
+      "key": "nutrition",
+      "name": "🍎 Nutrition"
+    },
+    {
+      "key": "miracleMorning",
+      "name": "🌅 Miracle morning"
+    },
+    {
+      "key": "workBusiness",
+      "name": "💼 Work business"
+    },
+    {
+      "key": "workFocused",
+      "name": "🎯 Work focused CC"
+    },
+    {
+      "key": "highAgency",
+      "name": "🚀 High agency/ HIM"
+    },
+    {
+      "key": "screenTime",
+      "name": "Screen time < 2h"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-10-06",
+      "workout": true,
+      "nutrition": false,
+      "miracleMorning": false,
+      "workBusiness": false,
+      "workFocused": false,
+      "highAgency": false,
+      "screenTime": false
+    }
+  ]
+}

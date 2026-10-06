@@ -1,0 +1,65 @@
+name: Sync Notion and deploy
+
+on:
+  schedule:
+    # Every 30 minutes (GitHub may run scheduled jobs a few minutes late)
+    - cron: '7,37 * * * *'
+  push:
+    branches: [main]
+  workflow_dispatch: # Manual "Run workflow" button
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: sync-and-deploy
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch habits from Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
+        run: node scripts/fetch-notion.mjs
+
+      - name: Commit data if it changed
+        id: commit
+        run: |
+          git add site/data
+          if git diff --staged --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Update habit data"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Scheduled runs only redeploy when Notion actually changed.
+      - name: Upload site
+        if: github.event_name != 'schedule' || steps.commit.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        if: github.event_name != 'schedule' || steps.commit.outputs.changed == 'true'
+        uses: actions/deploy-pages@v4
