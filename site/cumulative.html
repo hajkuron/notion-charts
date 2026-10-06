@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Cumulative score</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="charts.css">
+</head>
+<body>
+    <div class="container">
+        <p class="loading" id="status">Loading chart data…</p>
+
+        <div id="dashboard" hidden>
+            <div class="section-title">All time</div>
+            <div id="stats" class="stats-grid"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Cumulative Score <span class="card-subtitle" id="range"></span></div>
+                </div>
+                <div class="chart-wrapper tall">
+                    <canvas id="cumulative-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <span><a href="index.html">Calendars</a> · <a href="charts.html">Charts</a> · <a href="habits.html">Habits</a></span>
+            <span id="updated"></span>
+        </footer>
+    </div>
+
+    <script src="cumulative.js"></script>
+</body>
+</html>

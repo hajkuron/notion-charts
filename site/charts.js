@@ -12,14 +12,14 @@ const AREAS = [
         color: '#3b82f6',
         shades: ['#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe'],
         pointStyle: 'circle',
-        keys: ['workout', 'nutrition', 'miracleMorning', 'screenTime'],
+        keys: ['workout', 'nutrition', 'miracleMorning', 'screenTime', 'read'],
     },
     {
         name: 'Business',
         color: '#ef4444',
         shades: ['#ef4444', '#f87171', '#fca5a5', '#fee2e2'],
         pointStyle: 'rect',
-        keys: ['workBusiness', 'workFocused', 'highAgency', 'screenTime'],
+        keys: ['workBusiness', 'workFocused', 'highAgency', 'screenTime', 'read'],
     },
 ];
 const SHARED_COLOR = '#a78bfa'; // habits that count towards more than one area

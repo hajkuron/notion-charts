@@ -23,6 +23,7 @@ const HABITS = [
     { key: 'workFocused', name: '🎯 Work focused CC' },
     { key: 'highAgency', name: '🚀 High agency/ HIM' },
     { key: 'screenTime', name: 'Screen time < 2h' },
+    { key: 'read', name: '📚 Read' },
 ];
 
 loadDotEnv();

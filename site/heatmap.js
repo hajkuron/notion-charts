@@ -3,12 +3,14 @@
 const GREEN = ['#0e4429', '#006d32', '#26a641', '#39d353'];
 const BLUE = ['#0a3069', '#0d4a6e', '#0969da', '#54aeff'];
 const ORANGE = ['#3d1e00', '#7a2e00', '#bd4b00', '#fb8f44'];
+const PURPLE = ['#3c1e79', '#5e35b1', '#7e57c2', '#b39ddb'];
 
 // `colors` runs from the lowest filled level to the highest (all habits of the chart done).
 const CHARTS = [
     { title: 'Workout & Nutrition', keys: ['workout', 'nutrition'], colors: [GREEN[1], GREEN[3]] },
     { title: 'Work Business', keys: ['workBusiness'], colors: [BLUE[3]] },
     { title: 'Miracle Morning', keys: ['miracleMorning'], colors: [ORANGE[3]] },
+    { title: 'Read', keys: ['read'], colors: [PURPLE[3]] },
 ];
 
 const CELL = 11;
