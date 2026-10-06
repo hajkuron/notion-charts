@@ -4,11 +4,12 @@ Habit charts fed by the Notion "Habits" and "Goals" databases.
 
 - `site/index.html`: GitHub-style calendars
 - `site/charts.html`: weekly and daily progress per area, with goal scores
+- `site/habits.html`: one weekly progress chart per habit
 
 ## How it works
 
 1. `scripts/fetch-notion.mjs` reads both Notion databases and writes `site/data/habits.json` (one entry per day, plus the goals).
-2. `site/` holds two static pages that draw from that JSON.
+2. `site/` holds three static pages that draw from that JSON.
 3. `.github/workflows/sync.yml` runs the fetch every 30 minutes, commits the JSON when it changed, and deploys `site/` to GitHub Pages.
 
 ## Run locally

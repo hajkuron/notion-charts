@@ -1,4 +1,6 @@
 // Weekly and daily habit charts, with goal scores from the Notion "Goals" database.
+// Shared by charts.html (area charts) and habits.html (one chart per habit); each
+// page gets the sections whose elements it contains.
 //
 // A habit's weekly score is the share of the week's days it was done, so it climbs
 // through the week. An area's score is the average of its habits.
@@ -297,7 +299,7 @@ function renderHabits(state, week) {
     habitCharts = [];
     const grid = document.getElementById('habits-grid');
     grid.replaceChildren();
-    document.getElementById('habits-week').textContent = `· Week ${week.number}`;
+    document.getElementById('week-range').textContent = formatRange(week.startMs);
 
     const keys = [...new Set(AREAS.flatMap((area) => area.keys))];
     for (const key of keys) {
@@ -372,8 +374,8 @@ function renderWeekSelector(state) {
     const select = (week, button) => {
         selector.querySelectorAll('.week-btn').forEach((other) => other.classList.remove('active'));
         button.classList.add('active');
-        renderDaily(state, week);
-        renderHabits(state, week);
+        if (document.getElementById('daily-chart')) renderDaily(state, week);
+        if (document.getElementById('habits-grid')) renderHabits(state, week);
     };
 
     let latest = null;
@@ -399,7 +401,7 @@ function render(data) {
 
     document.getElementById('status').hidden = true;
     document.getElementById('dashboard').hidden = false;
-    renderWeekly(state);
+    if (document.getElementById('weekly-chart')) renderWeekly(state);
     renderWeekSelector(state);
 
     if (data.updatedAt) {
