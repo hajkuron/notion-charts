@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>Habit dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="charts.css">
+</head>
+<body>
+    <div class="container">
+        <p class="loading" id="status">Loading chart data…</p>
+
+        <div id="dashboard" hidden>
+            <div class="section-title">Overview</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Weekly Performance</div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="weekly-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="section-title">Daily Progress</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Week Breakdown <span class="card-subtitle" id="week-range"></span></div>
+                    <div id="week-selector" class="week-selector"></div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="daily-chart"></canvas>
+                </div>
+                <ul class="goal-list" id="goal-list"></ul>
+            </div>
+
+            <div class="section-title">Habit Performance <span id="habits-week"></span></div>
+            <div id="habits-grid" class="tasks-grid"></div>
+        </div>
+
+        <footer class="page-footer">
+            <a href="index.html">← Calendars</a>
+            <span id="updated"></span>
+        </footer>
+    </div>
+
+    <script src="charts.js"></script>
+</body>
+</html>

@@ -36,6 +36,7 @@ jobs:
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID: ${{ vars.NOTION_DATABASE_ID }}
+          NOTION_GOALS_DATABASE_ID: ${{ vars.NOTION_GOALS_DATABASE_ID }}
         run: node scripts/fetch-notion.mjs
 
       - name: Commit data if it changed

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-06T07:24:21.097Z",
+  "updatedAt": "2026-10-06T08:08:15.090Z",
   "habits": [
     {
       "key": "workout",
@@ -40,6 +40,15 @@
       "workFocused": false,
       "highAgency": false,
       "screenTime": false
+    }
+  ],
+  "goals": [
+    {
+      "name": "Dones project",
+      "area": "Business",
+      "week": "5.10-11.10.2026",
+      "weekStart": "2026-10-05",
+      "score": null
     }
   ]
 }

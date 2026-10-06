@@ -1,9 +1,10 @@
-// Pulls every row of the Notion "Habits" database and writes site/data/habits.json.
+// Pulls the Notion "Habits" and "Goals" databases and writes site/data/habits.json.
 // Zero dependencies: needs Node 20+ (built-in fetch).
 //
-//   NOTION_TOKEN        integration token (required)
-//   NOTION_DATABASE_ID  the Habits database (required)
-//   HABITS_TIMEZONE     used only when a row has no usable date in its title
+//   NOTION_TOKEN              integration token (required)
+//   NOTION_DATABASE_ID        the Habits database (required)
+//   NOTION_GOALS_DATABASE_ID  the Goals database (optional; no goal scores without it)
+//   HABITS_TIMEZONE           used only when a row has no usable date in its title
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -28,6 +29,7 @@ loadDotEnv();
 
 const TOKEN = process.env.NOTION_TOKEN;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+const GOALS_DATABASE_ID = process.env.NOTION_GOALS_DATABASE_ID;
 const TIMEZONE = process.env.HABITS_TIMEZONE || 'Europe/Ljubljana';
 
 if (!TOKEN || !DATABASE_ID) {
@@ -64,11 +66,11 @@ async function notion(path, body) {
     return data;
 }
 
-async function fetchAllRows() {
+async function fetchAllRows(databaseId) {
     const rows = [];
     let cursor;
     do {
-        const page = await notion(`/databases/${DATABASE_ID}/query`, {
+        const page = await notion(`/databases/${databaseId}/query`, {
             page_size: 100,
             ...(cursor ? { start_cursor: cursor } : {}),
         });
@@ -96,7 +98,7 @@ function dateInTimezone(iso) {
 function rowDate(row) {
     const properties = row.properties;
     const titleProperty = Object.values(properties).find((property) => property.type === 'title');
-    const title = (titleProperty?.title || []).map((part) => part.plain_text).join('').trim();
+    const title = plainText(titleProperty?.title);
     const fromTitle = title.match(/\d{4}-\d{2}-\d{2}/);
     if (fromTitle && !Number.isNaN(Date.parse(fromTitle[0]))) return fromTitle[0];
 
@@ -130,18 +132,59 @@ function mergeByDate(days) {
     return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-const rows = await fetchAllRows();
+const plainText = (parts) => (parts || []).map((part) => part.plain_text).join('').trim();
+
+// A goal's week is a label like "5.10-11.10.2026" (day.month-day.month.year).
+// Returns the Monday of that week as YYYY-MM-DD, or null if the label does not parse.
+function weekStart(label) {
+    const match = (label || '').match(/^\s*(\d{1,2})\.(\d{1,2})\.?\s*-\s*(\d{1,2})\.(\d{1,2})\.(\d{4})\s*$/);
+    if (!match) return null;
+    const [startDay, startMonth, , endMonth, endYear] = match.slice(1).map(Number);
+    // A week running from December into January starts in the previous year.
+    const year = startMonth > endMonth ? endYear - 1 : endYear;
+    const start = new Date(Date.UTC(year, startMonth - 1, startDay));
+    if (start.getUTCMonth() !== startMonth - 1) return null;
+    start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+    return start.toISOString().slice(0, 10);
+}
+
+function toGoal(row) {
+    const properties = row.properties;
+    const name = plainText(Object.values(properties).find((property) => property.type === 'title')?.title);
+    const week = findProperty(properties, 'Week')?.select?.name;
+    const area = findProperty(properties, 'Area')?.select?.name;
+    const score = findProperty(properties, 'Score')?.number;
+    const start = weekStart(week);
+    if (!area || !start) {
+        console.warn(`Skipping goal "${name}": ${area ? `cannot read week "${week}"` : 'no area set'}`);
+        return null;
+    }
+    return { name, area, week, weekStart: start, score: score ?? null };
+}
+
+const rows = await fetchAllRows(DATABASE_ID);
 const days = mergeByDate(rows.map(toDay));
-const content = { habits: HABITS, days };
+
+let goals = [];
+if (GOALS_DATABASE_ID) {
+    const goalRows = await fetchAllRows(GOALS_DATABASE_ID);
+    goals = goalRows.map(toGoal).filter(Boolean)
+        .sort((a, b) => `${a.weekStart}${a.area}${a.name}`.localeCompare(`${b.weekStart}${b.area}${b.name}`));
+} else {
+    console.warn('NOTION_GOALS_DATABASE_ID is not set; goal scores are left out.');
+}
+
+const content = { habits: HABITS, days, goals };
 
 // Keep the old timestamp when nothing changed so an unchanged sync produces no diff.
 let updatedAt = new Date().toISOString();
 if (existsSync(OUTPUT)) {
     const previous = JSON.parse(readFileSync(OUTPUT, 'utf8'));
-    const same = JSON.stringify({ habits: previous.habits, days: previous.days }) === JSON.stringify(content);
+    const { habits, days: previousDays, goals: previousGoals } = previous;
+    const same = JSON.stringify({ habits, days: previousDays, goals: previousGoals }) === JSON.stringify(content);
     if (same && previous.updatedAt) updatedAt = previous.updatedAt;
 }
 
 mkdirSync(dirname(OUTPUT), { recursive: true });
 writeFileSync(OUTPUT, `${JSON.stringify({ updatedAt, ...content }, null, 2)}\n`);
-console.log(`Wrote ${days.length} day(s) from ${rows.length} row(s) to site/data/habits.json`);
+console.log(`Wrote ${days.length} day(s) and ${goals.length} goal(s) to site/data/habits.json`);
