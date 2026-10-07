@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-06T19:48:05.104Z",
+  "updatedAt": "2026-10-07T05:49:40.383Z",
   "habits": [
     {
       "key": "workout",
@@ -44,6 +44,17 @@
       "workFocused": true,
       "highAgency": false,
       "screenTime": true,
+      "read": false
+    },
+    {
+      "date": "2026-10-07",
+      "workout": false,
+      "nutrition": false,
+      "miracleMorning": false,
+      "workBusiness": false,
+      "workFocused": false,
+      "highAgency": false,
+      "screenTime": false,
       "read": false
     }
   ],
