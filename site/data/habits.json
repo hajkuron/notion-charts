@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-12T15:13:48.507Z",
+  "updatedAt": "2026-10-13T11:03:00.384Z",
   "habits": [
     {
       "key": "workout",
@@ -34,7 +34,19 @@
       "name": "📚 Read"
     }
   ],
-  "days": [],
+  "days": [
+    {
+      "date": "2026-10-13",
+      "workout": false,
+      "nutrition": false,
+      "miracleMorning": false,
+      "workBusiness": false,
+      "workFocused": false,
+      "highAgency": false,
+      "screenTime": false,
+      "read": false
+    }
+  ],
   "goals": [
     {
       "name": "92 kg in the morning",
