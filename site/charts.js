@@ -138,9 +138,6 @@ function barDataset(area, data) {
         borderWidth: 0,
         borderRadius: 4,
         pointStyle: 'rectRounded',
-        maxBarThickness: 28,
-        categoryPercentage: 0.7,
-        barPercentage: 0.6,
         order: 1,
     };
 }
@@ -205,6 +202,18 @@ const goalLine = {
     },
 };
 
+// A fixed bar thickness makes Chart.js pack each day's or week's bars side by side,
+// centred on the label, so the line points sit on the seam between them.
+const pairedBars = {
+    id: 'pairedBars',
+    beforeUpdate(chart) {
+        const bars = chart.data.datasets.filter((dataset) => dataset.type === 'bar');
+        const slot = chart.width / chart.data.labels.length;
+        const thickness = Math.max(4, Math.min(24, Math.floor((slot * 0.6) / bars.length)));
+        for (const dataset of bars) dataset.barThickness = thickness;
+    },
+};
+
 function comboChart(canvas, labels, datasets, titles) {
     return new Chart(canvas, {
         type: 'bar',
@@ -230,7 +239,7 @@ function comboChart(canvas, labels, datasets, titles) {
             scales: { x: categoryAxis(12), y: percentAxis(110, 20, 12) },
             interaction: { mode: 'index', intersect: false },
         },
-        plugins: [goalLine],
+        plugins: [goalLine, pairedBars],
     });
 }
 
