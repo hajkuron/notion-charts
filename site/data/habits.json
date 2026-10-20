@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-20T06:33:25.453Z",
+  "updatedAt": "2026-10-20T07:11:25.341Z",
   "habits": [
     {
       "key": "workout",
@@ -81,42 +81,42 @@
     },
     {
       "date": "2026-10-17",
-      "workout": false,
-      "nutrition": false,
+      "workout": true,
+      "nutrition": true,
       "miracleMorning": false,
       "workBusiness": false,
       "workFocused": false,
       "highAgency": false,
-      "screenTime": false,
-      "read": false
+      "screenTime": true,
+      "read": true
     },
     {
       "date": "2026-10-18",
       "workout": false,
-      "nutrition": false,
+      "nutrition": true,
       "miracleMorning": false,
       "workBusiness": false,
       "workFocused": false,
       "highAgency": false,
-      "screenTime": false,
+      "screenTime": true,
       "read": false
     },
     {
       "date": "2026-10-19",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
+      "workout": true,
+      "nutrition": true,
+      "miracleMorning": true,
+      "workBusiness": true,
       "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
+      "highAgency": true,
+      "screenTime": true,
+      "read": true
     },
     {
       "date": "2026-10-20",
-      "workout": false,
+      "workout": true,
       "nutrition": false,
-      "miracleMorning": false,
+      "miracleMorning": true,
       "workBusiness": false,
       "workFocused": false,
       "highAgency": false,
@@ -130,20 +130,34 @@
       "area": "Body",
       "week": "12.10-19.10.2026",
       "weekStart": "2026-10-12",
-      "score": null
+      "score": 90
     },
     {
       "name": "CC: module almost done",
       "area": "Business",
       "week": "12.10-19.10.2026",
       "weekStart": "2026-10-12",
-      "score": null
+      "score": 100
     },
     {
       "name": "Project live",
       "area": "Business",
       "week": "12.10-19.10.2026",
       "weekStart": "2026-10-12",
+      "score": 50
+    },
+    {
+      "name": "CC - all new sources in the app",
+      "area": "Business",
+      "week": "19.10-25.10.2026",
+      "weekStart": "2026-10-19",
+      "score": null
+    },
+    {
+      "name": "Project quality ads running + organic content uploading",
+      "area": "Business",
+      "week": "19.10-25.10.2026",
+      "weekStart": "2026-10-19",
       "score": null
     }
   ]
