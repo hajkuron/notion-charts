@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T06:14:54.304Z",
+  "updatedAt": "2026-10-28T13:29:43.534Z",
   "habits": [
     {
       "key": "workout",
@@ -36,175 +36,10 @@
   ],
   "days": [
     {
-      "date": "2026-10-13",
-      "workout": true,
-      "nutrition": true,
-      "miracleMorning": true,
-      "workBusiness": false,
-      "workFocused": true,
-      "highAgency": true,
-      "screenTime": true,
-      "read": true
-    },
-    {
-      "date": "2026-10-14",
-      "workout": true,
-      "nutrition": true,
-      "miracleMorning": true,
-      "workBusiness": true,
-      "workFocused": false,
-      "highAgency": true,
-      "screenTime": true,
-      "read": false
-    },
-    {
-      "date": "2026-10-15",
-      "workout": true,
-      "nutrition": true,
-      "miracleMorning": true,
-      "workBusiness": true,
-      "workFocused": true,
-      "highAgency": true,
-      "screenTime": true,
-      "read": true
-    },
-    {
-      "date": "2026-10-16",
-      "workout": true,
-      "nutrition": false,
-      "miracleMorning": true,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-17",
-      "workout": true,
-      "nutrition": true,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": true,
-      "read": true
-    },
-    {
-      "date": "2026-10-18",
-      "workout": false,
-      "nutrition": true,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": true,
-      "read": false
-    },
-    {
-      "date": "2026-10-19",
-      "workout": true,
-      "nutrition": true,
-      "miracleMorning": true,
-      "workBusiness": true,
-      "workFocused": false,
-      "highAgency": true,
-      "screenTime": true,
-      "read": true
-    },
-    {
-      "date": "2026-10-20",
-      "workout": true,
-      "nutrition": false,
-      "miracleMorning": true,
-      "workBusiness": true,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-21",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-22",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-23",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-24",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-25",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-26",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
-      "date": "2026-10-27",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
-      "workBusiness": false,
-      "workFocused": false,
-      "highAgency": false,
-      "screenTime": false,
-      "read": false
-    },
-    {
       "date": "2026-10-28",
-      "workout": false,
-      "nutrition": false,
-      "miracleMorning": false,
+      "workout": true,
+      "nutrition": true,
+      "miracleMorning": true,
       "workBusiness": false,
       "workFocused": false,
       "highAgency": false,
@@ -239,13 +74,20 @@
       "area": "Business",
       "week": "19.10-25.10.2026",
       "weekStart": "2026-10-19",
-      "score": null
+      "score": 90
     },
     {
       "name": "Project quality ads running + organic content uploading",
       "area": "Business",
       "week": "19.10-25.10.2026",
       "weekStart": "2026-10-19",
+      "score": 30
+    },
+    {
+      "name": "Project quality ads running + organic content uploading",
+      "area": "Business",
+      "week": "26.10-01.11.2026",
+      "weekStart": "2026-10-26",
       "score": null
     }
   ]
