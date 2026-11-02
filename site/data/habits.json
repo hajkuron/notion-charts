@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T09:22:46.223Z",
+  "updatedAt": "2026-11-02T19:45:03.512Z",
   "habits": [
     {
       "key": "workout",
@@ -94,7 +94,7 @@
       "date": "2026-11-02",
       "workout": false,
       "nutrition": false,
-      "miracleMorning": false,
+      "miracleMorning": true,
       "workBusiness": false,
       "workFocused": false,
       "highAgency": false,
@@ -143,6 +143,34 @@
       "area": "Business",
       "week": "26.10-01.11.2026",
       "weekStart": "2026-10-26",
+      "score": 0
+    },
+    {
+      "name": "3 meals + shake",
+      "area": "Body",
+      "week": "2.11-8.11.2026",
+      "weekStart": "2026-11-02",
+      "score": null
+    },
+    {
+      "name": "4 times gym and really push",
+      "area": "Body",
+      "week": "2.11-8.11.2026",
+      "weekStart": "2026-11-02",
+      "score": null
+    },
+    {
+      "name": "Paid ads running",
+      "area": "Business",
+      "week": "2.11-8.11.2026",
+      "weekStart": "2026-11-02",
+      "score": null
+    },
+    {
+      "name": "Reddit 2 accounts running",
+      "area": "Business",
+      "week": "2.11-8.11.2026",
+      "weekStart": "2026-11-02",
       "score": null
     }
   ]
